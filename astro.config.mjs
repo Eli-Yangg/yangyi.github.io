@@ -5,7 +5,7 @@ import mdx from "@astrojs/mdx";
 
 export default defineConfig({
   output: "static",
-  site: "https://Eli-Yangg.github.io/yangyi.github.io",
+  site: "https://Eli-Yangg.github.io",
   vite: {
     plugins: [tailwindcss()]
   },
