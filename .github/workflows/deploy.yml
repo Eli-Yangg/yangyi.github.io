@@ -22,7 +22,8 @@ jobs:
           node-version: 22
       
       - name: Install
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
+        timeout-minutes: 10
       
       - name: Build
         run: npm run build
