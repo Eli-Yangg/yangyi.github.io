@@ -4,9 +4,10 @@ import react from "@astrojs/react";
 import mdx from "@astrojs/mdx";
 
 export default defineConfig({
+  output: "static",
+  site: "https://yangyi.github.io",
   vite: {
     plugins: [tailwindcss()]
   },
   integrations: [react(), mdx()],
-  site: "https://github.com/Eli-Yangg/yangyi.github.io",
 });
