@@ -1,0 +1,12 @@
+---
+import BlogStatsComponent from "./blog/BlogStats";
+import { calculateBlogStats } from "../lib/blog";
+
+const stats = await calculateBlogStats();
+---
+
+<div class="relative z-0 -mx-6 px-6 py-24 md:py-32" data-stats-section>
+  <div class="mx-auto max-w-7xl">
+    <BlogStatsComponent client:load stats={stats} isVisible={false} />
+  </div>
+</div>

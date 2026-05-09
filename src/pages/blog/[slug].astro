@@ -1,0 +1,123 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection, getEntry, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const blog = await getCollection("blog");
+  return blog.map(entry => ({
+    params: { slug: entry.id },
+    props: entry,
+  }));
+}
+
+interface Props {
+  id: string;
+  data: {
+    title: string;
+    description: string;
+    date: string;
+    tags?: string[];
+    category?: string;
+  };
+  body: string;
+}
+
+const entry = Astro.props as Props;
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={`${entry.data.title} | Eli.dev`}>
+  <main class="min-h-screen">
+    <header class="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
+      <h1 class="text-xl font-semibold tracking-wide">Eli.dev</h1>
+      <nav class="flex items-center gap-8 text-sm text-slate-300">
+        <a href="/" class="transition hover:text-violet-400">首页</a>
+        <a href="/blog" class="transition hover:text-violet-400">Blog</a>
+        <a href="#" class="transition hover:text-violet-400">Projects</a>
+        <a href="#" class="transition hover:text-violet-400">About</a>
+      </nav>
+    </header>
+
+    <article class="mx-auto max-w-3xl px-6 py-16">
+      <div class="mb-12 border-b border-violet-500/20 pb-12">
+        <h1 class="mb-4 text-4xl font-bold md:text-5xl">{entry.data.title}</h1>
+        <p class="text-slate-400">
+          {new Date(entry.data.date).toLocaleDateString("zh-CN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </p>
+        {entry.data.tags && entry.data.tags.length > 0 && (
+          <div class="mt-4 flex flex-wrap gap-2">
+            {entry.data.tags.map((tag: string) => (
+              <span class="inline-block rounded-full bg-violet-500/20 px-3 py-1 text-xs text-violet-300">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div class="prose prose-invert max-w-none">
+        <Content />
+      </div>
+
+      <div class="mt-12 border-t border-violet-500/20 pt-12">
+        <a
+          href="/blog"
+          class="inline-block rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium transition hover:bg-violet-500"
+        >
+          ← 返回博客列表
+        </a>
+      </div>
+    </article>
+  </main>
+</BaseLayout>
+
+<style is:global>
+  .prose {
+    color: #cbd5e1;
+  }
+
+  .prose h2,
+  .prose h3,
+  .prose h4 {
+    color: white;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+
+  .prose code {
+    color: #e879f9;
+    background-color: rgba(15, 23, 42, 0.5);
+    padding: 0.2em 0.4em;
+    border-radius: 0.3em;
+  }
+
+  .prose pre {
+    background-color: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    border-radius: 0.5em;
+    padding: 1em;
+    overflow-x: auto;
+  }
+
+  .prose a {
+    color: #a78bfa;
+    text-decoration: underline;
+  }
+
+  .prose a:hover {
+    color: #c084fc;
+  }
+
+  .prose blockquote {
+    border-left-color: #a78bfa;
+    color: #a8a9ad;
+  }
+
+  .prose img {
+    border-radius: 0.5em;
+  }
+</style>
