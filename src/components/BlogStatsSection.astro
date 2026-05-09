@@ -5,8 +5,44 @@ import { calculateBlogStats } from "../lib/blog";
 const stats = await calculateBlogStats();
 ---
 
-<div class="relative z-0 -mx-6 px-6 py-24 md:py-32" data-stats-section>
-  <div class="mx-auto max-w-7xl">
-    <BlogStatsComponent client:load stats={stats} isVisible={false} />
+<div
+  class="stats-section relative z-0 -mx-6 flex h-screen flex-col justify-center overflow-hidden px-6"
+  data-stats-section
+>
+  {/* 大尺度柔光 aura — 让板块从深色背景上浮起来 */}
+  <div class="pointer-events-none absolute inset-0 -z-10">
+    <div
+      class="absolute left-1/2 top-0 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-violet-600/25 blur-[120px]"
+    >
+    </div>
+    <div
+      class="absolute bottom-0 right-10 h-[400px] w-[500px] rounded-full bg-fuchsia-600/15 blur-[120px]"
+    >
+    </div>
+    <div
+      class="absolute bottom-20 left-10 h-[350px] w-[450px] rounded-full bg-indigo-600/15 blur-[120px]"
+    >
+    </div>
+  </div>
+
+  {/* 顶部分隔线 */}
+  <div
+    class="pointer-events-none absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-linear-to-r from-transparent via-violet-400/40 to-transparent"
+  >
+  </div>
+
+  <div class="relative mx-auto w-full max-w-[1400px] px-4 md:px-8">
+    <BlogStatsComponent client:load stats={stats} />
   </div>
 </div>
+
+<style>
+  .stats-section {
+    background:
+      radial-gradient(
+        ellipse at top,
+        rgba(139, 92, 246, 0.08) 0%,
+        transparent 60%
+      );
+  }
+</style>

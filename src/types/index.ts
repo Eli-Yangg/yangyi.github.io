@@ -9,6 +9,10 @@ export interface BlogStats {
     label: string;
     count: number;
   }[];
+  dailyContributions: {
+    date: string;
+    count: number;
+  }[];
 }
 
 export interface BlogPost {

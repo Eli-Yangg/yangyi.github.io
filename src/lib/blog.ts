@@ -76,6 +76,7 @@ export async function calculateBlogStats(): Promise<BlogStats> {
       totalWords,
       categories: categories.length > 0 ? categories : [{ name: "全部", count: sortedPosts.length }],
       timeline,
+      dailyContributions: buildDailyContributions(sortedPosts),
     };
   } catch (error) {
     console.error("Error calculating blog stats:", error);
@@ -89,8 +90,48 @@ export async function calculateBlogStats(): Promise<BlogStats> {
         { label: "本季度", count: 0 },
         { label: "本年", count: 0 },
       ],
+      dailyContributions: buildDailyContributions([]),
     };
   }
+}
+
+function buildDailyContributions(
+  posts: { data: { date: Date | string } }[]
+): { date: string; count: number }[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 回溯 52 周 + 本周剩余天数，让最后一列对齐今天所在周
+  const end = new Date(today);
+  const start = new Date(today);
+  start.setDate(start.getDate() - (52 * 7 + today.getDay()));
+
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    const d = new Date(post.data.date);
+    d.setHours(0, 0, 0, 0);
+    if (d < start || d > end) continue;
+    const key = toDateKey(d);
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+
+  const result: { date: string; count: number }[] = [];
+  for (
+    let cursor = new Date(start);
+    cursor <= end;
+    cursor.setDate(cursor.getDate() + 1)
+  ) {
+    const key = toDateKey(cursor);
+    result.push({ date: key, count: counts.get(key) || 0 });
+  }
+  return result;
+}
+
+function toDateKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export function getLatestPostLink(): string {
