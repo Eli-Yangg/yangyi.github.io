@@ -22,48 +22,48 @@ const posts = (await getCollection("blog")).sort(
     <section class="mx-auto max-w-4xl px-6 py-16">
       <h2 class="mb-12 text-4xl font-bold md:text-5xl">博客列表</h2>
 
-      {posts.length === 0 ? (
-        <p class="text-slate-400">暂无博客文章</p>
-      ) : (
-        <div class="space-y-8">
-          {posts.map((post) => (
-            <article
-              class="glass rounded-xl border border-violet-500/20 p-6 transition hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/20"
-            >
-              <div class="flex flex-col gap-4">
-                <div>
-                  <h3 class="text-2xl font-bold text-white transition hover:text-violet-400">
-                    {post.data.title}
-                  </h3>
-                  <p class="mt-2 text-sm text-slate-400">
-                    {new Date(post.data.date).toLocaleDateString("zh-CN", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
-                </div>
-                <p class="text-slate-300">{post.data.description}</p>
-                {post.data.tags && post.data.tags.length > 0 && (
-                  <div class="flex flex-wrap gap-2">
-                    {post.data.tags.map((tag) => (
-                      <span class="inline-block rounded-full bg-violet-500/20 px-3 py-1 text-xs text-violet-300">
-                        {tag}
-                      </span>
-                    ))}
+      {
+        posts.length === 0 ? (
+          <p class="text-slate-400">暂无博客文章</p>
+        ) : (
+          <div class="space-y-8">
+            {posts.map((post) => (
+              <article class="glass rounded-xl border border-violet-500/20 p-6 transition hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/20">
+                <div class="flex flex-col gap-4">
+                  <div>
+                    <h3 class="text-2xl font-bold text-white transition hover:text-violet-400">
+                      {post.data.title}
+                    </h3>
+                    <p class="mt-2 text-sm text-slate-400">
+                      {new Date(post.data.date).toLocaleDateString("zh-CN", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
                   </div>
-                )}
-                <a
-                  href={`/blog/${post.slug}`}
-                  class="mt-4 inline-block w-fit rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium transition hover:bg-violet-500"
-                >
-                  阅读全文
-                </a>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
+                  <p class="text-slate-300">{post.data.description}</p>
+                  {post.data.tags && post.data.tags.length > 0 && (
+                    <div class="flex flex-wrap gap-2">
+                      {post.data.tags.map((tag) => (
+                        <span class="inline-block rounded-full bg-violet-500/20 px-3 py-1 text-xs text-violet-300">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <a
+                    href={`/blog/${post.id}`}
+                    class="mt-4 inline-block w-fit rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium transition hover:bg-violet-500"
+                  >
+                    阅读全文
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        )
+      }
     </section>
   </main>
 </BaseLayout>

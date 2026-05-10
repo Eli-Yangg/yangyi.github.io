@@ -36,7 +36,7 @@ interface TooltipState {
   y: number;
   date: string;
   count: number;
-  align: 'center' | 'right';
+  align: "center" | "right";
 }
 
 const ContributionGraph: React.FC<ContributionGraphProps> = ({ data, total }) => {
@@ -74,16 +74,13 @@ const ContributionGraph: React.FC<ContributionGraphProps> = ({ data, total }) =>
     return { weeks, monthLabels: labels };
   }, [data]);
 
-  const handleCellEnter = (
-    e: React.MouseEvent<HTMLDivElement>,
-    cell: DailyContribution
-  ) => {
+  const handleCellEnter = (e: React.MouseEvent<HTMLDivElement>, cell: DailyContribution) => {
     const container = gridRef.current;
     if (!container) return;
     const crect = container.getBoundingClientRect();
     const r = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
     const x = r.left - crect.left + r.width / 2;
-    const align = x > crect.width * 0.8 ? 'right' : 'center';
+    const align = x > crect.width * 0.8 ? "right" : "center";
     setTooltip({
       x,
       y: r.top - crect.top,
@@ -96,17 +93,13 @@ const ContributionGraph: React.FC<ContributionGraphProps> = ({ data, total }) =>
   const handleCellLeave = () => setTooltip(null);
 
   return (
-    <div
-      ref={rootRef}
-      className="contrib-card relative overflow-hidden rounded-2xl p-4 md:p-5"
-    >
-      <div className="pointer-events-none absolute -left-24 -top-24 h-64 w-64 rounded-full bg-violet-500/25 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-20 h-56 w-56 rounded-full bg-fuchsia-500/20 blur-3xl" />
+    <div ref={rootRef} className="contrib-card relative overflow-hidden rounded-2xl p-4 md:p-5">
+      <div className="pointer-events-none absolute -top-24 -left-24 h-64 w-64 rounded-full bg-violet-500/25 blur-3xl" />
+      <div className="pointer-events-none absolute -right-20 -bottom-24 h-56 w-56 rounded-full bg-fuchsia-500/20 blur-3xl" />
 
       <div className="relative z-10 flex items-center justify-between">
         <p className="text-sm text-slate-300/80">
-          过去一年共 <span className="font-bold text-violet-200">{total}</span>{" "}
-          篇文章
+          过去一年共 <span className="font-bold text-violet-200">{total}</span> 篇文章
         </p>
         <div className="hidden items-center gap-2 text-xs text-slate-400 md:flex">
           <span>Less</span>
@@ -129,9 +122,7 @@ const ContributionGraph: React.FC<ContributionGraphProps> = ({ data, total }) =>
                 className="relative flex-1 text-[10px] text-slate-400"
                 style={{ paddingRight: 2 }}
               >
-                {label && (
-                  <span className="whitespace-nowrap">{label.label}</span>
-                )}
+                {label && <span className="whitespace-nowrap">{label.label}</span>}
               </div>
             );
           })}
@@ -197,15 +188,13 @@ const ContributionGraph: React.FC<ContributionGraphProps> = ({ data, total }) =>
         {/* 自定义 tooltip */}
         {tooltip && (
           <div
-            className={`pointer-events-none absolute z-30 -translate-y-full whitespace-nowrap rounded-lg border border-violet-500/30 bg-slate-900/95 px-3 py-2 text-xs shadow-xl backdrop-blur-md ${
-              tooltip.align === 'right' ? '-translate-x-full' : '-translate-x-1/2'
+            className={`pointer-events-none absolute z-30 -translate-y-full rounded-lg border border-violet-500/30 bg-slate-900/95 px-3 py-2 text-xs whitespace-nowrap shadow-xl backdrop-blur-md ${
+              tooltip.align === "right" ? "-translate-x-full" : "-translate-x-1/2"
             }`}
             style={{ left: tooltip.x, top: tooltip.y - 6 }}
           >
             <div className="font-semibold text-violet-200">{tooltip.date}</div>
-            <div className="mt-0.5 text-slate-300">
-              {tooltip.count} 篇文章
-            </div>
+            <div className="mt-0.5 text-slate-300">{tooltip.count} 篇文章</div>
           </div>
         )}
       </div>

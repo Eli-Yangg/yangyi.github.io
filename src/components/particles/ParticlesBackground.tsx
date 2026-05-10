@@ -4,9 +4,7 @@ interface ParticlesBackgroundProps {
   className?: string;
 }
 
-const ParticlesBackground: React.FC<ParticlesBackgroundProps> = ({
-  className = "",
-}) => {
+const ParticlesBackground: React.FC<ParticlesBackgroundProps> = ({ className = "" }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -24,6 +22,7 @@ const ParticlesBackground: React.FC<ParticlesBackgroundProps> = ({
     setCanvasSize();
 
     // 粒子类
+    const canvasEl = canvas;
     class Particle {
       x: number;
       y: number;
@@ -34,8 +33,8 @@ const ParticlesBackground: React.FC<ParticlesBackgroundProps> = ({
       color: string;
 
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        this.x = Math.random() * canvasEl.width;
+        this.y = Math.random() * canvasEl.height;
         this.vx = (Math.random() - 0.5) * 2;
         this.vy = (Math.random() - 0.5) * 2;
         this.radius = Math.random() * 1.5 + 0.5;
@@ -122,12 +121,7 @@ const ParticlesBackground: React.FC<ParticlesBackgroundProps> = ({
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className={`absolute inset-0 -z-10 ${className}`}
-    />
-  );
+  return <canvas ref={canvasRef} className={`absolute inset-0 -z-10 ${className}`} />;
 };
 
 export default ParticlesBackground;

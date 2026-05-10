@@ -78,12 +78,7 @@ const BlogStatsComponent: React.FC<BlogStatsComponentProps> = ({ stats }) => {
         </motion.h3>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <HeroStatCard
-            label="总博客数"
-            value={stats.total}
-            isVisible={isInView}
-            index={0}
-          />
+          <HeroStatCard label="总博客数" value={stats.total} isVisible={isInView} index={0} />
           <HeroStatCard
             label="总字数"
             value={stats.totalWords}
@@ -144,9 +139,7 @@ const BlogStatsComponent: React.FC<BlogStatsComponentProps> = ({ stats }) => {
                     animate={
                       isInView
                         ? {
-                            width: `${
-                              (category.count / stats.total) * 100
-                            }%`,
+                            width: `${(category.count / stats.total) * 100}%`,
                           }
                         : { width: 0 }
                     }
@@ -177,13 +170,7 @@ interface HeroStatCardProps {
   index: number;
 }
 
-const HeroStatCard: React.FC<HeroStatCardProps> = ({
-  label,
-  value,
-  suffix,
-  isVisible,
-  index,
-}) => {
+const HeroStatCard: React.FC<HeroStatCardProps> = ({ label, value, suffix, isVisible, index }) => {
   return (
     <motion.div
       variants={cardVariants}
@@ -192,8 +179,8 @@ const HeroStatCard: React.FC<HeroStatCardProps> = ({
       className="stat-hero-card group relative overflow-hidden rounded-2xl p-6"
     >
       {/* 柔和径向光晕 */}
-      <div className="pointer-events-none absolute -left-20 -top-20 h-56 w-56 rounded-full bg-violet-500/40 blur-3xl transition-opacity duration-500 group-hover:opacity-100" />
-      <div className="pointer-events-none absolute -bottom-20 -right-16 h-48 w-48 rounded-full bg-fuchsia-500/30 blur-3xl transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="pointer-events-none absolute -top-20 -left-20 h-56 w-56 rounded-full bg-violet-500/40 blur-3xl transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="pointer-events-none absolute -right-16 -bottom-20 h-48 w-48 rounded-full bg-fuchsia-500/30 blur-3xl transition-opacity duration-500 group-hover:opacity-100" />
 
       {/* shimmer 高光扫过 */}
       <div className="shimmer pointer-events-none absolute inset-0" />

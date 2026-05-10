@@ -12,11 +12,11 @@ const stats = await calculateBlogStats();
   {/* 大尺度柔光 aura — 让板块从深色背景上浮起来 */}
   <div class="pointer-events-none absolute inset-0 -z-10">
     <div
-      class="absolute left-1/2 top-0 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-violet-600/25 blur-[120px]"
+      class="absolute top-0 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-violet-600/25 blur-[120px]"
     >
     </div>
     <div
-      class="absolute bottom-0 right-10 h-[400px] w-[500px] rounded-full bg-fuchsia-600/15 blur-[120px]"
+      class="absolute right-10 bottom-0 h-[400px] w-[500px] rounded-full bg-fuchsia-600/15 blur-[120px]"
     >
     </div>
     <div
@@ -27,7 +27,7 @@ const stats = await calculateBlogStats();
 
   {/* 顶部分隔线 */}
   <div
-    class="pointer-events-none absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-linear-to-r from-transparent via-violet-400/40 to-transparent"
+    class="pointer-events-none absolute top-0 left-1/2 h-px w-2/3 -translate-x-1/2 bg-linear-to-r from-transparent via-violet-400/40 to-transparent"
   >
   </div>
 
@@ -38,11 +38,6 @@ const stats = await calculateBlogStats();
 
 <style>
   .stats-section {
-    background:
-      radial-gradient(
-        ellipse at top,
-        rgba(139, 92, 246, 0.08) 0%,
-        transparent 60%
-      );
+    background: radial-gradient(ellipse at top, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
   }
 </style>

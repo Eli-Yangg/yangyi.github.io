@@ -1,28 +1,18 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getCollection, getEntry, render } from "astro:content";
+import { getCollection, render, type CollectionEntry } from "astro:content";
 
 export async function getStaticPaths() {
   const blog = await getCollection("blog");
-  return blog.map(entry => ({
+  return blog.map((entry) => ({
     params: { slug: entry.id },
     props: entry,
   }));
 }
 
-interface Props {
-  id: string;
-  data: {
-    title: string;
-    description: string;
-    date: string;
-    tags?: string[];
-    category?: string;
-  };
-  body: string;
-}
+type Props = CollectionEntry<"blog">;
 
-const entry = Astro.props as Props;
+const entry = Astro.props;
 const { Content } = await render(entry);
 ---
 
@@ -42,21 +32,25 @@ const { Content } = await render(entry);
       <div class="mb-12 border-b border-violet-500/20 pb-12">
         <h1 class="mb-4 text-4xl font-bold md:text-5xl">{entry.data.title}</h1>
         <p class="text-slate-400">
-          {new Date(entry.data.date).toLocaleDateString("zh-CN", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
+          {
+            new Date(entry.data.date).toLocaleDateString("zh-CN", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          }
         </p>
-        {entry.data.tags && entry.data.tags.length > 0 && (
-          <div class="mt-4 flex flex-wrap gap-2">
-            {entry.data.tags.map((tag: string) => (
-              <span class="inline-block rounded-full bg-violet-500/20 px-3 py-1 text-xs text-violet-300">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        {
+          entry.data.tags && entry.data.tags.length > 0 && (
+            <div class="mt-4 flex flex-wrap gap-2">
+              {entry.data.tags.map((tag: string) => (
+                <span class="inline-block rounded-full bg-violet-500/20 px-3 py-1 text-xs text-violet-300">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )
+        }
       </div>
 
       <div class="prose prose-invert max-w-none">

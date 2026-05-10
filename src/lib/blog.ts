@@ -74,7 +74,8 @@ export async function calculateBlogStats(): Promise<BlogStats> {
     return {
       total: sortedPosts.length,
       totalWords,
-      categories: categories.length > 0 ? categories : [{ name: "全部", count: sortedPosts.length }],
+      categories:
+        categories.length > 0 ? categories : [{ name: "全部", count: sortedPosts.length }],
       timeline,
       dailyContributions: buildDailyContributions(sortedPosts),
     };
@@ -116,11 +117,7 @@ function buildDailyContributions(
   }
 
   const result: { date: string; count: number }[] = [];
-  for (
-    let cursor = new Date(start);
-    cursor <= end;
-    cursor.setDate(cursor.getDate() + 1)
-  ) {
+  for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
     const key = toDateKey(cursor);
     result.push({ date: key, count: counts.get(key) || 0 });
   }

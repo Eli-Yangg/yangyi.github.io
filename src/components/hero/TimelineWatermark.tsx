@@ -17,10 +17,10 @@ const MOCK_TIMELINE: TimelineItem[] = [
 const TimelineWatermark: React.FC = () => {
   return (
     <div
-      className="timeline-watermark pointer-events-none absolute left-8 top-24 z-0 hidden select-none md:block"
+      className="timeline-watermark pointer-events-none absolute top-24 left-8 z-0 hidden select-none md:block"
       aria-hidden="true"
     >
-      <div className="mb-4 flex items-center gap-2 pl-1 text-[10px] uppercase tracking-[0.2em] text-slate-400/40">
+      <div className="mb-4 flex items-center gap-2 pl-1 text-[10px] tracking-[0.2em] text-slate-400/40 uppercase">
         <span className="h-px w-6 bg-slate-400/30" />
         <span>Timeline</span>
       </div>
