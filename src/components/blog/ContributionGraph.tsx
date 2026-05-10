@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { useInView } from "framer-motion";
 
 interface DailyContribution {
   date: string;
@@ -41,6 +41,7 @@ interface TooltipState {
 
 const ContributionGraph: React.FC<ContributionGraphProps> = ({ data, total }) => {
   const rootRef = useRef<HTMLDivElement>(null);
+  const cellsRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(rootRef, { amount: 0.2, margin: "-5% 0px" });
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
@@ -131,7 +132,7 @@ const ContributionGraph: React.FC<ContributionGraphProps> = ({ data, total }) =>
         {/* 主体：星期标签 + 格子区 */}
         <div className="mt-1 flex w-full gap-1.5">
           {/* 星期标签 */}
-          <div className="flex w-6 flex-col justify-between py-[1px] text-[10px] text-slate-400">
+          <div className="flex w-6 flex-col justify-between py-px text-[10px] text-slate-400">
             {WEEK_LABELS.map((l, i) => (
               <div key={i} className="leading-none">
                 {l}
@@ -140,49 +141,30 @@ const ContributionGraph: React.FC<ContributionGraphProps> = ({ data, total }) =>
           </div>
 
           {/* 格子区 */}
-          <motion.div
-            className="flex flex-1 gap-[2px]"
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-            variants={{
-              visible: { transition: { staggerChildren: 0.01 } },
-            }}
+          <div
+            ref={cellsRef}
+            className={`contrib-cells flex flex-1 gap-0.5 ${isInView ? "is-visible" : ""}`}
           >
             {weeks.map((col, wi) => (
-              <motion.div
+              <div
                 key={wi}
-                className="flex flex-1 flex-col gap-[2px]"
-                variants={{
-                  hidden: {},
-                  visible: { transition: { staggerChildren: 0.005 } },
-                }}
+                className="contrib-col flex flex-1 flex-col gap-0.5"
+                style={{ "--w": wi } as React.CSSProperties}
               >
                 {col.map((cell, di) => {
                   const lvl = cell ? levelOf(cell.count) : 0;
                   return (
-                    <motion.div
+                    <div
                       key={di}
-                      variants={{
-                        hidden: { opacity: 0, scale: 0.3 },
-                        visible: {
-                          opacity: cell ? 1 : 0.35,
-                          scale: 1,
-                          transition: {
-                            duration: 0.35,
-                            ease: [0.22, 1, 0.36, 1] as const,
-                          },
-                        },
-                      }}
-                      whileHover={{ scale: 1.35, zIndex: 10 }}
+                      className={`contrib-cell aspect-square w-full cursor-pointer rounded-[3px] ${LEVEL_CLASSES[lvl]} ${cell ? "" : "is-empty"}`}
                       onMouseEnter={(e) => cell && handleCellEnter(e, cell)}
                       onMouseLeave={handleCellLeave}
-                      className={`aspect-square w-full rounded-[3px] ${LEVEL_CLASSES[lvl]} cursor-pointer`}
                     />
                   );
                 })}
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
 
         {/* 自定义 tooltip */}

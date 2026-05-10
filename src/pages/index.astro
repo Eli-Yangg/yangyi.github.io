@@ -3,9 +3,13 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import ParticlesBackground from "../components/particles/ParticlesBackground";
 import BlogStatsSection from "../components/BlogStatsSection.astro";
 import TimelineWatermark from "../components/hero/TimelineWatermark";
+import Avatar from "../components/hero/Avatar";
 ---
 
 <BaseLayout>
+  <!-- 固定在屏幕底部的数字人，常驻所有滚动位置 -->
+  <Avatar client:load />
+
   <main class="relative min-h-screen overflow-hidden">
     <!-- 粒子背景 -->
     <ParticlesBackground client:load />
@@ -96,15 +100,16 @@ import TimelineWatermark from "../components/hero/TimelineWatermark";
 
   .glow {
     animation: glow 4s ease-in-out infinite;
+    will-change: opacity;
   }
 
   @keyframes glow {
     0%,
     100% {
-      filter: blur(3rem) opacity(0.3);
+      opacity: 0.3;
     }
     50% {
-      filter: blur(3rem) opacity(0.5);
+      opacity: 0.5;
     }
   }
 

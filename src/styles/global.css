@@ -187,3 +187,92 @@ body {
     transform: translateY(0);
   }
 }
+
+/* contribution 图格子入场：按周 stagger，纯 CSS 以避免 300+ motion 节点 */
+.contrib-cell {
+  opacity: 0;
+  transform: scale(0.3);
+  will-change: opacity, transform;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.contrib-cell.is-empty {
+  /* 空格子目标透明度更低 */
+}
+.contrib-cells.is-visible .contrib-cell {
+  animation: contrib-cell-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(var(--w, 0) * 12ms);
+}
+.contrib-cells.is-visible .contrib-col {
+  /* 让 --w 透传给子 cell */
+}
+.contrib-cell:hover {
+  transform: scale(1.35);
+  z-index: 10;
+  position: relative;
+}
+@keyframes contrib-cell-in {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.contrib-cells.is-visible .contrib-cell.is-empty {
+  animation-name: contrib-cell-in-empty;
+}
+@keyframes contrib-cell-in-empty {
+  to {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .contrib-cell,
+  .contrib-cells.is-visible .contrib-cell {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .contrib-cells.is-visible .contrib-cell.is-empty {
+    opacity: 0.35;
+  }
+}
+
+/* ---------- 数字人 avatar（基于抠图 PNG + 眼睛 overlay） ---------- */
+.avatar-root {
+  /* 整体水平位移控制：idle 时滑出到屏幕右侧，只露头部 */
+  --avatar-shift: 0px;
+  transform: translateX(var(--avatar-shift));
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.avatar-root.is-idle {
+  /* 数字人右半身滑出屏幕外，仅头部露出 */
+  --avatar-shift: 55%;
+}
+
+.avatar-frame {
+  position: relative;
+  width: 200px;
+  aspect-ratio: 1 / 1;
+  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.45));
+}
+@media (min-width: 768px) {
+  .avatar-frame {
+    width: 260px;
+  }
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  user-select: none;
+  pointer-events: none;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar-root,
+  .avatar-frame {
+    transition: none;
+  }
+}

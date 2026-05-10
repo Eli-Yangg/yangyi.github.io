@@ -22,33 +22,29 @@ const containerVariants = {
 };
 
 const titleVariants = {
-  hidden: { opacity: 0, y: 30, filter: "blur(12px)" },
+  hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.9, ease: EASE },
+    transition: { duration: 0.7, ease: EASE },
   },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 60, rotateX: -14, filter: "blur(12px)" },
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
-    rotateX: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.9, ease: EASE },
+    transition: { duration: 0.7, ease: EASE },
   },
 };
 
 const smallCardVariants = {
-  hidden: { opacity: 0, y: 24, filter: "blur(8px)" },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.7, ease: EASE },
+    transition: { duration: 0.55, ease: EASE },
   },
 };
 
@@ -66,7 +62,6 @@ const BlogStatsComponent: React.FC<BlogStatsComponentProps> = ({ stats }) => {
       initial="hidden"
       animate={isInView ? "visible" : "hidden"}
       className="w-full"
-      style={{ perspective: 1200 }}
     >
       {/* 总体统计 */}
       <div className="mb-8">
