@@ -34,9 +34,10 @@
 
 All blog source files are located in [`src/content/blog/`](./src/content/blog/)
 
-| Title                                                  | Date       | Category | Tags        |
-| ------------------------------------------------------ | ---------- | -------- | ----------- |
-| [我的第一篇技术博客](./src/content/blog/first-post.md) | 2026-05-08 | 技术     | Astro, 前端 |
+| Title                                                                                  | Date       | Category | Tags  |
+| -------------------------------------------------------------------------------------- | ---------- | -------- | ----- |
+| [来了个紧急需求，试试用git worktree](./src/content/blog/git-worktree-emergency-fix.md) | 2025-12-31 | 技术     | git   |
+| [ErrorBoundary Card](./src/content/blog/react-error-boundary-implementation.md)        | 2025-11-27 | 技术     | react |
 
 _Note: Update this table when adding new blog posts._
 

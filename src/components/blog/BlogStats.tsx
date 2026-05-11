@@ -5,10 +5,11 @@ import ContributionGraph from "./ContributionGraph";
 
 interface BlogStatsComponentProps {
   stats: BlogStats;
-  isVisible?: boolean;
 }
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+const numberFormatter = new Intl.NumberFormat("zh-CN");
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -30,15 +31,6 @@ const titleVariants = {
   },
 };
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: EASE },
-  },
-};
-
 const smallCardVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -48,12 +40,29 @@ const smallCardVariants = {
   },
 };
 
+function formatDateLabel(value: string | null): string {
+  if (!value) return "等待发布";
+
+  return new Date(value).toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatDaysAgo(days: number): string {
+  if (days <= 0) return "今天更新";
+  if (days === 1) return "1 天前更新";
+  return `${days} 天前更新`;
+}
+
 const BlogStatsComponent: React.FC<BlogStatsComponentProps> = ({ stats }) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(rootRef, {
     amount: 0.15,
     margin: "-5% 0px -5% 0px",
   });
+  const maxCategoryCount = Math.max(...stats.categories.map((category) => category.count), 1);
 
   return (
     <motion.div
@@ -61,135 +70,175 @@ const BlogStatsComponent: React.FC<BlogStatsComponentProps> = ({ stats }) => {
       variants={containerVariants}
       initial="hidden"
       animate={isInView ? "visible" : "hidden"}
-      className="w-full"
+      className="flex h-full w-full flex-col justify-center"
     >
-      {/* 总体统计 */}
-      <div className="mb-8">
-        <motion.h3
-          variants={titleVariants}
-          className="shine-text mb-6 text-center text-2xl font-bold md:text-3xl"
-        >
-          博客统计
-        </motion.h3>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <HeroStatCard label="总博客数" value={stats.total} isVisible={isInView} index={0} />
-          <HeroStatCard
-            label="总字数"
-            value={stats.totalWords}
-            suffix="字"
-            isVisible={isInView}
-            index={1}
-          />
-          <HeroStatCard
-            label="分类数"
-            value={stats.categories.length}
-            isVisible={isInView}
-            index={2}
-          />
-        </div>
-      </div>
-
-      {/* 按创建时间统计（GitHub 风格贡献图） */}
-      <div className="mb-8">
-        <motion.h3
-          variants={titleVariants}
-          className="mb-4 bg-linear-to-r from-white to-violet-200 bg-clip-text text-lg font-semibold text-transparent"
-        >
-          按创建时间统计
-        </motion.h3>
-        <motion.div variants={smallCardVariants}>
-          <ContributionGraph
-            data={stats.dailyContributions}
-            total={stats.dailyContributions.reduce((s, d) => s + d.count, 0)}
-          />
+      <div className="space-y-4">
+        <motion.div variants={titleVariants}>
+          <p className="mb-2 text-sm tracking-[0.24em] text-violet-300 uppercase">Blog Pulse</p>
+          <h3 className="shine-text text-2xl font-bold md:text-3xl">把写作节奏做成首页的一部分</h3>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+            不只是显示总数，而是让访问者一眼看出最近有没有更新、内容覆盖了哪些主题，以及写作是否在持续发生。
+          </p>
         </motion.div>
-      </div>
 
-      {/* 按分类统计 */}
-      <div>
-        <motion.h3
-          variants={titleVariants}
-          className="mb-4 bg-linear-to-r from-white to-violet-200 bg-clip-text text-lg font-semibold text-transparent"
-        >
-          按分类统计
-        </motion.h3>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {stats.categories.map((category) => (
-            <motion.div
-              key={category.name}
-              variants={smallCardVariants}
-              whileHover={{ y: -2 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="stat-mini-card group relative flex items-center justify-between overflow-hidden rounded-xl p-4"
-            >
-              <span className="relative z-10 text-sm font-medium text-slate-50">
-                {category.name}
-              </span>
-              <div className="relative z-10 flex items-center gap-3">
-                <div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-700/60">
-                  <motion.div
-                    className="h-full rounded-full bg-linear-to-r from-violet-400 to-fuchsia-300 shadow-[0_0_10px_rgba(167,139,250,0.7)]"
-                    initial={{ width: 0 }}
-                    animate={
-                      isInView
-                        ? {
-                            width: `${(category.count / stats.total) * 100}%`,
-                          }
-                        : { width: 0 }
-                    }
-                    transition={{
-                      duration: 1.2,
-                      delay: 0.4,
-                      ease: EASE,
-                    }}
-                  />
-                </div>
-                <span className="min-w-8 text-right text-sm font-semibold text-violet-200">
-                  {category.count}
-                </span>
+        <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.8fr)]">
+          <motion.div
+            variants={smallCardVariants}
+            className="stats-summary-panel flex flex-col rounded-3xl p-4 md:p-5"
+          >
+            <div className="grid gap-3 md:grid-cols-2">
+              <MetricInline
+                label="总博客数"
+                value={stats.total}
+                meta={`最近更新 ${formatDateLabel(stats.latestPublishedAt)}`}
+                isVisible={isInView}
+                delay={0.16}
+              />
+              <MetricInline
+                label="累计字数"
+                value={stats.totalWords}
+                suffix="字"
+                meta={`${numberFormatter.format(stats.categories.length)} 个主题`}
+                isVisible={isInView}
+                delay={0.22}
+              />
+              <MetricInline
+                label="平均篇幅"
+                value={stats.averageWords}
+                suffix="字"
+                meta={stats.total > 0 ? "按当前文章数估算" : "等待首篇文章"}
+                isVisible={isInView}
+                delay={0.28}
+              />
+              <MetricInline
+                label="写作跨度"
+                value={stats.publishingSpanDays}
+                suffix="天"
+                meta={formatDaysAgo(stats.daysSinceLastPost)}
+                isVisible={isInView}
+                delay={0.34}
+              />
+            </div>
+
+            <div className="my-3 h-px w-full bg-linear-to-r from-transparent via-violet-300/35 to-transparent" />
+
+            <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+              {stats.timeline.map((item) => (
+                <motion.div
+                  key={item.label}
+                  variants={smallCardVariants}
+                  className="timeline-chip rounded-2xl px-3 py-2.5"
+                >
+                  <p className="text-[10px] tracking-[0.2em] text-slate-500 uppercase">
+                    {item.label}
+                  </p>
+                  <div className="mt-1.5 flex items-end justify-between gap-3">
+                    <span className="text-lg font-semibold text-white md:text-xl">
+                      {numberFormatter.format(item.count)}
+                    </span>
+                    <span className="text-xs text-slate-500">篇</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div
+            variants={smallCardVariants}
+            className="topic-panel flex flex-col rounded-3xl p-4 md:p-5"
+          >
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs tracking-[0.2em] text-slate-400 uppercase">Topic Mix</p>
+                <h4 className="mt-1.5 text-base font-semibold text-white md:text-lg">
+                  当前主题分布
+                </h4>
               </div>
-            </motion.div>
-          ))}
+              <span className="rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1 text-xs text-violet-200">
+                {numberFormatter.format(stats.categories.length)} 类
+              </span>
+            </div>
+
+            <div className="flex flex-1 flex-col justify-center space-y-2.5">
+              {stats.categories.map((category) => (
+                <div key={category.name} className="group relative">
+                  <div className="mb-1.5 flex items-center justify-between gap-3 text-sm">
+                    <span className="text-slate-100">{category.name}</span>
+                    <span className="text-violet-200">{category.count}</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-800/80">
+                    <motion.div
+                      className="h-full rounded-full bg-linear-to-r from-violet-400 to-fuchsia-300 shadow-[0_0_10px_rgba(167,139,250,0.7)]"
+                      initial={{ width: 0 }}
+                      animate={
+                        isInView
+                          ? {
+                              width: `${(category.count / maxCategoryCount) * 100}%`,
+                            }
+                          : { width: 0 }
+                      }
+                      transition={{
+                        duration: 1.2,
+                        delay: 0.4,
+                        ease: EASE,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
         </div>
+
+        <motion.div variants={smallCardVariants} className="contribution-stage">
+          <div className="mb-2 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs tracking-[0.2em] text-violet-300 uppercase">
+                Contribution Grid
+              </p>
+              <h4 className="mt-1 text-lg font-semibold text-white md:text-xl">
+                过去一年的发布热度
+              </h4>
+            </div>
+            <p className="text-xs text-slate-400 md:text-sm">
+              按日期分布，独立展示最近一年的写作轨迹
+            </p>
+          </div>
+
+          <div className="mx-auto w-full">
+            <ContributionGraph
+              data={stats.dailyContributions}
+              total={stats.dailyContributions.reduce((s, d) => s + d.count, 0)}
+            />
+          </div>
+        </motion.div>
       </div>
     </motion.div>
   );
 };
 
-interface HeroStatCardProps {
+interface MetricInlineProps {
   label: string;
   value: number;
   suffix?: string;
+  meta?: string;
   isVisible: boolean;
-  index: number;
+  delay: number;
 }
 
-const HeroStatCard: React.FC<HeroStatCardProps> = ({ label, value, suffix, isVisible, index }) => {
+const MetricInline: React.FC<MetricInlineProps> = ({
+  label,
+  value,
+  suffix,
+  meta,
+  isVisible,
+  delay,
+}) => {
   return (
-    <motion.div
-      variants={cardVariants}
-      whileHover={{ y: -6 }}
-      transition={{ type: "spring", stiffness: 260, damping: 22 }}
-      className="stat-hero-card group relative overflow-hidden rounded-2xl p-6"
-    >
-      {/* 柔和径向光晕 */}
-      <div className="pointer-events-none absolute -top-20 -left-20 h-56 w-56 rounded-full bg-violet-500/40 blur-3xl transition-opacity duration-500 group-hover:opacity-100" />
-      <div className="pointer-events-none absolute -right-16 -bottom-20 h-48 w-48 rounded-full bg-fuchsia-500/30 blur-3xl transition-opacity duration-500 group-hover:opacity-100" />
-
-      {/* shimmer 高光扫过 */}
-      <div className="shimmer pointer-events-none absolute inset-0" />
-
-      <div className="relative z-10">
-        <p className="text-sm tracking-wide text-slate-300/90">{label}</p>
-        <CountUpNumber
-          end={value}
-          isVisible={isVisible}
-          suffix={suffix}
-          delay={0.2 + index * 0.12}
-        />
-        <div className="mt-4 h-px w-full bg-linear-to-r from-transparent via-violet-300/50 to-transparent" />
-      </div>
+    <motion.div variants={smallCardVariants} className="metric-inline">
+      <p className="text-xs tracking-[0.16em] text-slate-400 uppercase md:text-sm">{label}</p>
+      <CountUpNumber end={value} isVisible={isVisible} suffix={suffix} delay={delay} compact />
+      {meta && <p className="mt-1.5 text-xs text-slate-500 md:text-sm">{meta}</p>}
     </motion.div>
   );
 };
@@ -199,6 +248,7 @@ interface CountUpNumberProps {
   isVisible: boolean;
   suffix?: string;
   delay?: number;
+  compact?: boolean;
 }
 
 const CountUpNumber: React.FC<CountUpNumberProps> = ({
@@ -206,6 +256,7 @@ const CountUpNumber: React.FC<CountUpNumberProps> = ({
   isVisible,
   suffix = "",
   delay = 0,
+  compact = false,
 }) => {
   const [count, setCount] = useState(0);
 
@@ -246,10 +297,14 @@ const CountUpNumber: React.FC<CountUpNumberProps> = ({
       initial={{ opacity: 0 }}
       animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
       transition={{ duration: 0.6, delay }}
-      className="count-number mt-2 text-4xl font-bold md:text-5xl"
+      className={`count-number mt-1.5 font-bold ${compact ? "text-xl md:text-2xl" : "text-4xl md:text-5xl"}`}
     >
-      {count}
-      {suffix && <span className="ml-1 text-2xl md:text-3xl">{suffix}</span>}
+      {numberFormatter.format(count)}
+      {suffix && (
+        <span className={`ml-1 ${compact ? "text-base md:text-lg" : "text-2xl md:text-3xl"}`}>
+          {suffix}
+        </span>
+      )}
     </motion.div>
   );
 };

@@ -6,7 +6,7 @@ const stats = await calculateBlogStats();
 ---
 
 <div
-  class="stats-section relative z-0 -mx-6 flex h-screen flex-col justify-center overflow-hidden px-6"
+  class="stats-section relative z-0 -mx-6 flex h-screen flex-col justify-center px-6 py-8 md:py-10"
   data-stats-section
 >
   {/* 大尺度柔光 aura — 让板块从深色背景上浮起来 */}
@@ -31,7 +31,7 @@ const stats = await calculateBlogStats();
   >
   </div>
 
-  <div class="relative mx-auto w-full max-w-[1400px] px-4 md:px-8">
+  <div class="relative mx-auto flex h-full w-full max-w-[1400px] items-center px-4 md:px-8">
     <BlogStatsComponent client:load stats={stats} />
   </div>
 </div>

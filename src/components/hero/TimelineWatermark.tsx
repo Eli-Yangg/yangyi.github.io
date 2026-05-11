@@ -6,15 +6,11 @@ interface TimelineItem {
   tag: string;
 }
 
-const MOCK_TIMELINE: TimelineItem[] = [
-  { date: "2026.05", title: "Timeline Watermark", tag: "now" },
-  { date: "2026.01", title: "AI Search Beta", tag: "ai" },
-  { date: "2025.10", title: "SEO Optimization", tag: "seo" },
-  { date: "2025.07", title: "Performance Audit", tag: "perf" },
-  { date: "2025.04", title: "Contribution Graph", tag: "feature" },
-];
+interface TimelineWatermarkProps {
+  timeline: TimelineItem[];
+}
 
-const TimelineWatermark: React.FC = () => {
+const TimelineWatermark: React.FC<TimelineWatermarkProps> = ({ timeline }) => {
   return (
     <div
       className="timeline-watermark pointer-events-none absolute top-24 left-8 z-0 hidden select-none md:block"
@@ -26,7 +22,7 @@ const TimelineWatermark: React.FC = () => {
       </div>
       <div className="timeline-list">
         <div className="timeline-rail" />
-        {MOCK_TIMELINE.map((item) => (
+        {timeline.map((item) => (
           <div key={item.date} className="timeline-node">
             <div className="timeline-dot" />
             <div className="timeline-content">

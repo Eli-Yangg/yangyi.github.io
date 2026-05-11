@@ -1,6 +1,8 @@
 import { getCollection } from "astro:content";
 import type { BlogStats } from "../types";
 
+const DAY_IN_MS = 1000 * 60 * 60 * 24;
+
 export async function calculateBlogStats(): Promise<BlogStats> {
   try {
     const allPosts = await getCollection("blog");
@@ -14,6 +16,9 @@ export async function calculateBlogStats(): Promise<BlogStats> {
     const totalWords = sortedPosts.reduce((acc, post) => {
       return acc + (post.body ? post.body.length : 0);
     }, 0);
+
+    const latestPostDate = sortedPosts[0] ? normalizeDate(sortedPosts[0].data.date) : null;
+    const firstPostDate = sortedPosts.at(-1) ? normalizeDate(sortedPosts.at(-1)!.data.date) : null;
 
     // 按分类统计
     const categoryMap = new Map<string, number>();
@@ -74,6 +79,12 @@ export async function calculateBlogStats(): Promise<BlogStats> {
     return {
       total: sortedPosts.length,
       totalWords,
+      averageWords: sortedPosts.length > 0 ? Math.round(totalWords / sortedPosts.length) : 0,
+      firstPublishedAt: firstPostDate ? toDateKey(firstPostDate) : null,
+      latestPublishedAt: latestPostDate ? toDateKey(latestPostDate) : null,
+      publishingSpanDays:
+        firstPostDate && latestPostDate ? diffDays(firstPostDate, latestPostDate) + 1 : 0,
+      daysSinceLastPost: latestPostDate ? diffDays(latestPostDate, now) : 0,
       categories:
         categories.length > 0 ? categories : [{ name: "全部", count: sortedPosts.length }],
       timeline,
@@ -84,6 +95,11 @@ export async function calculateBlogStats(): Promise<BlogStats> {
     return {
       total: 0,
       totalWords: 0,
+      averageWords: 0,
+      firstPublishedAt: null,
+      latestPublishedAt: null,
+      publishingSpanDays: 0,
+      daysSinceLastPost: 0,
       categories: [],
       timeline: [
         { label: "本周", count: 0 },
@@ -94,6 +110,19 @@ export async function calculateBlogStats(): Promise<BlogStats> {
       dailyContributions: buildDailyContributions([]),
     };
   }
+}
+
+function normalizeDate(value: Date | string): Date {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function diffDays(from: Date, to: Date): number {
+  return Math.max(
+    0,
+    Math.floor((normalizeDate(to).getTime() - normalizeDate(from).getTime()) / DAY_IN_MS)
+  );
 }
 
 function buildDailyContributions(
@@ -109,8 +138,7 @@ function buildDailyContributions(
 
   const counts = new Map<string, number>();
   for (const post of posts) {
-    const d = new Date(post.data.date);
-    d.setHours(0, 0, 0, 0);
+    const d = normalizeDate(post.data.date);
     if (d < start || d > end) continue;
     const key = toDateKey(d);
     counts.set(key, (counts.get(key) || 0) + 1);

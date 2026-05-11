@@ -1,6 +1,11 @@
 export interface BlogStats {
   total: number;
   totalWords: number;
+  averageWords: number;
+  firstPublishedAt: string | null;
+  latestPublishedAt: string | null;
+  publishingSpanDays: number;
+  daysSinceLastPost: number;
   categories: {
     name: string;
     count: number;

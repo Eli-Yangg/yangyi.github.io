@@ -4,6 +4,67 @@ import ParticlesBackground from "../components/particles/ParticlesBackground";
 import BlogStatsSection from "../components/BlogStatsSection.astro";
 import TimelineWatermark from "../components/hero/TimelineWatermark";
 import Avatar from "../components/hero/Avatar";
+import { getCollection } from "astro:content";
+
+const DAY_IN_MS = 1000 * 60 * 60 * 24;
+
+const formatDate = (value: Date) =>
+  value.toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+const normalizeDate = (value: Date) => {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
+const diffDays = (from: Date, to: Date) => {
+  return Math.max(
+    0,
+    Math.floor((normalizeDate(to).getTime() - normalizeDate(from).getTime()) / DAY_IN_MS)
+  );
+};
+
+// 获取所有博客文章
+const allPosts = await getCollection("blog");
+
+// 按日期排序，最新的在前
+const sortedPosts = allPosts.sort(
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
+
+// 生成时间线数据（取最多 5 篇）
+const timeline = sortedPosts.slice(0, 5).map((post) => {
+  const date = new Date(post.data.date);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const dateStr = `${year}.${month}`;
+
+  // 取第一个 tag，如果没有则使用 category，都没有则用 "blog"
+  const tag = post.data.tags?.[0] || post.data.category?.toLowerCase() || "blog";
+
+  return {
+    date: dateStr,
+    title: post.data.title,
+    tag: tag.toLowerCase(),
+  };
+});
+
+const latestPosts = sortedPosts.slice(0, 2);
+const latestPost = sortedPosts[0] ?? null;
+const firstPost = sortedPosts.at(-1) ?? null;
+const uniqueTags = new Set(sortedPosts.flatMap((post) => post.data.tags ?? []));
+const publishingSpanDays =
+  latestPost && firstPost ? diffDays(firstPost.data.date, latestPost.data.date) + 1 : 0;
+const daysSinceLatest = latestPost ? diffDays(latestPost.data.date, new Date()) : 0;
+const latestUpdateLabel = latestPost
+  ? daysSinceLatest === 0
+    ? "今天更新"
+    : `${daysSinceLatest} 天前`
+  : "暂无更新";
 ---
 
 <BaseLayout>
@@ -23,9 +84,12 @@ import Avatar from "../components/hero/Avatar";
     </div>
 
     <!-- 第一屏：Header + Hero，严格占满视口高度 -->
-    <div class="relative flex h-screen flex-col">
+    <div
+      class="home-section home-section--hero relative flex h-screen snap-start flex-col"
+      data-home-section
+    >
       <!-- 左上角时间线水印 -->
-      <TimelineWatermark client:load />
+      <TimelineWatermark client:load timeline={timeline} />
 
       <!-- Header -->
       <header
@@ -34,8 +98,8 @@ import Avatar from "../components/hero/Avatar";
         <h1 class="text-xl font-semibold tracking-wide">Eli.dev</h1>
         <nav class="flex items-center gap-8 text-sm text-slate-300">
           <a href="#blog-stats" class="transition hover:text-violet-400">Blog</a>
-          <a href="#" class="transition hover:text-violet-400">Projects</a>
-          <a href="#" class="transition hover:text-violet-400">About</a>
+          <a href="#latest-posts" class="transition hover:text-violet-400">Latest</a>
+          <a href="#site-note" class="transition hover:text-violet-400">About</a>
         </nav>
       </header>
 
@@ -43,27 +107,37 @@ import Avatar from "../components/hero/Avatar";
       <section
         class="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center px-6 text-center"
       >
-        <div class="glass-fade-in rounded-full px-4 py-2 text-sm text-slate-300">
-          Frontend Engineer · React · Astro
+        <div
+          class="section-item rounded-full px-4 py-2 text-sm text-slate-300"
+          style="--section-delay: 0.08s;"
+        >
+          Frontend Engineer · React · Astro · {sortedPosts.length} 篇文章已发布
         </div>
-        <h2 class="hero-title mt-8 max-w-4xl text-5xl leading-tight font-bold md:text-7xl">
-          <span class="reveal-mask" style="animation-delay: 0.2s">
-            <span style="animation-delay: 0.2s">Build Beautiful</span>
+        <h2
+          class="section-item mt-8 max-w-4xl text-5xl leading-tight font-bold md:text-7xl"
+          style="--section-delay: 0.16s;"
+        >
+          <span class="reveal-mask">
+            <span style="--reveal-delay: 0.2s;">Build Beautiful</span>
           </span>
           <br />
-          <span class="reveal-mask" style="animation-delay: 0.45s">
+          <span class="reveal-mask">
             <span
               class="inline-block bg-gradient-to-r from-violet-400 to-fuchsia-300 bg-clip-text text-transparent"
-              style="animation-delay: 0.45s;"
+              style="--reveal-delay: 0.45s;"
             >
               Developer Experience
             </span>
           </span>
         </h2>
-        <p class="hero-desc mt-8 max-w-2xl text-lg leading-8 text-slate-400">
-          分享前端开发、React、性能优化、AI 与现代 Web 技术。
+        <p
+          class="section-item mt-8 max-w-2xl text-lg leading-8 text-slate-400"
+          style="--section-delay: 0.28s;"
+        >
+          分享前端开发、React、性能优化、AI 与现代 Web
+          技术，首页会随着内容增长持续展示写作节奏与最近更新。
         </p>
-        <div class="hero-buttons mt-10 flex gap-4">
+        <div class="section-item mt-10 flex gap-4" style="--section-delay: 0.4s;">
           <a
             href="/blog"
             class="group relative overflow-hidden rounded-xl bg-linear-to-r from-violet-600 to-fuchsia-600 px-6 py-3 font-medium shadow-lg shadow-violet-500/30 transition hover:shadow-xl hover:shadow-violet-500/50"
@@ -82,20 +156,294 @@ import Avatar from "../components/hero/Avatar";
             GitHub
           </a>
         </div>
+
+        <div
+          class="section-item mt-10 grid w-full max-w-4xl grid-cols-1 gap-3 text-left md:grid-cols-3"
+          style="--section-delay: 0.52s;"
+        >
+          <div class="glass stat-chip rounded-2xl px-5 py-4">
+            <p class="text-xs tracking-[0.2em] text-slate-400 uppercase">最新更新</p>
+            <p class="mt-2 text-lg font-semibold text-white">
+              {latestPost ? formatDate(latestPost.data.date) : "等待首篇文章"}
+            </p>
+          </div>
+          <div class="glass stat-chip rounded-2xl px-5 py-4">
+            <p class="text-xs tracking-[0.2em] text-slate-400 uppercase">写作跨度</p>
+            <p class="mt-2 text-lg font-semibold text-white">{publishingSpanDays || 0} 天</p>
+          </div>
+          <div class="glass stat-chip rounded-2xl px-5 py-4">
+            <p class="text-xs tracking-[0.2em] text-slate-400 uppercase">当前主题</p>
+            <p class="mt-2 text-lg font-semibold text-white">{uniqueTags.size || 0} 个标签</p>
+          </div>
+        </div>
       </section>
     </div>
 
+    <section
+      id="latest-posts"
+      class="home-section home-section--latest relative z-10 mx-auto flex h-screen w-full max-w-7xl snap-start items-center px-6"
+      data-home-section
+    >
+      <div class="section-shell w-full">
+        <div
+          class="section-item mb-8 flex items-end justify-between gap-6"
+          style="--section-delay: 0.08s;"
+        >
+          <div>
+            <p class="text-sm tracking-[0.25em] text-violet-300 uppercase">Latest Notes</p>
+            <h3 class="mt-3 text-3xl font-bold text-white md:text-4xl">最近更新的内容</h3>
+            <p class="mt-4 max-w-2xl text-slate-400">
+              现在已经有 {sortedPosts.length} 篇文章，首页可以开始承担索引入口的角色，直接展示最新文章、写作跨度和更新节奏。
+            </p>
+          </div>
+          <a
+            href="/blog"
+            class="hidden text-sm text-violet-300 transition hover:text-violet-200 md:block"
+          >
+            查看全部文章 →
+          </a>
+        </div>
+
+        <div
+          class="section-item grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]"
+          style="--section-delay: 0.18s;"
+        >
+          <div class="grid gap-4">
+            {
+              latestPosts.map((post, index) => (
+                <article class="post-card group relative overflow-hidden rounded-3xl border border-white/10 p-6 md:p-7">
+                  <div class="absolute inset-0 bg-linear-to-r from-violet-500/8 via-transparent to-fuchsia-500/8 opacity-0 transition duration-500 group-hover:opacity-100" />
+                  <div class="relative flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div class="max-w-2xl">
+                      <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                        <span class="rounded-full border border-violet-400/20 bg-violet-400/10 px-2.5 py-1 text-violet-200">
+                          0{index + 1}
+                        </span>
+                        <span>{formatDate(post.data.date)}</span>
+                        {post.data.category && <span>{post.data.category}</span>}
+                      </div>
+                      <h4 class="text-2xl font-semibold text-white transition group-hover:text-violet-200">
+                        {post.data.title}
+                      </h4>
+                      <p class="mt-3 max-w-xl leading-7 text-slate-400">{post.data.description}</p>
+                      {post.data.tags && post.data.tags.length > 0 && (
+                        <div class="mt-4 flex flex-wrap gap-2">
+                          {post.data.tags.map((tag) => (
+                            <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div class="flex shrink-0 items-end md:min-h-[140px]">
+                      <a
+                        href={`/blog/${post.id}`}
+                        class="inline-flex items-center gap-2 rounded-2xl border border-violet-400/30 bg-violet-500/10 px-4 py-2.5 text-sm font-medium text-violet-100 transition hover:border-violet-300/50 hover:bg-violet-500/20"
+                      >
+                        阅读全文
+                        <span aria-hidden="true">→</span>
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              ))
+            }
+          </div>
+
+          <aside id="site-note" class="site-note glass rounded-3xl p-6 md:p-7">
+            <p class="text-sm tracking-[0.25em] text-violet-300 uppercase">Site Status</p>
+            <h4 class="mt-4 text-2xl font-semibold text-white">写作开始形成节奏</h4>
+            <p class="mt-4 leading-7 text-slate-400">
+              目前已经完成从单页展示到内容归档的第一步，首页现在会明确告诉访问者最近写了什么、覆盖哪些主题，以及更新是否在持续发生。
+            </p>
+
+            <div class="mt-8 space-y-4">
+              <div class="note-row rounded-2xl border border-white/8 px-4 py-4">
+                <p class="text-xs tracking-[0.2em] text-slate-500 uppercase">首篇文章</p>
+                <p class="mt-2 text-base font-medium text-white">
+                  {firstPost ? formatDate(firstPost.data.date) : "等待发布"}
+                </p>
+              </div>
+              <div class="note-row rounded-2xl border border-white/8 px-4 py-4">
+                <p class="text-xs tracking-[0.2em] text-slate-500 uppercase">最近更新</p>
+                <p class="mt-2 text-base font-medium text-white">
+                  {latestUpdateLabel}
+                </p>
+              </div>
+              <div class="note-row rounded-2xl border border-white/8 px-4 py-4">
+                <p class="text-xs tracking-[0.2em] text-slate-500 uppercase">内容覆盖</p>
+                <p class="mt-2 text-base font-medium text-white">
+                  {uniqueTags.size} 个标签 / {sortedPosts.length} 篇文章
+                </p>
+              </div>
+            </div>
+
+            <a
+              href="/blog"
+              class="mt-8 inline-flex items-center gap-2 text-sm font-medium text-violet-300 transition hover:text-violet-200"
+            >
+              进入博客归档
+              <span aria-hidden="true">→</span>
+            </a>
+          </aside>
+        </div>
+      </div>
+    </section>
+
     <!-- 博客统计部分 -->
-    <section id="blog-stats" class="relative z-0" data-stats-section>
+    <section
+      id="blog-stats"
+      class="home-section home-section--stats relative z-0 h-screen snap-start"
+      data-home-section
+    >
       <BlogStatsSection />
     </section>
   </main>
+
+  <script is:inline>
+    (() => {
+      const sections = Array.from(document.querySelectorAll("[data-home-section]"));
+      if (!sections.length || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        sections.forEach((section) => section.classList.add("is-active"));
+        return;
+      }
+
+      let ticking = false;
+
+      const updateSections = () => {
+        const viewportCenter = window.innerHeight / 2;
+        let activeSection = sections[0];
+        let minDistance = Number.POSITIVE_INFINITY;
+
+        sections.forEach((section) => {
+          const rect = section.getBoundingClientRect();
+          const sectionCenter = rect.top + rect.height / 2;
+          const distance = Math.abs(sectionCenter - viewportCenter);
+
+          if (distance < minDistance) {
+            minDistance = distance;
+            activeSection = section;
+          }
+        });
+
+        sections.forEach((section) => {
+          const rect = section.getBoundingClientRect();
+          section.classList.toggle("is-active", section === activeSection);
+          section.classList.toggle("is-before", rect.bottom <= viewportCenter);
+          section.classList.toggle("is-after", rect.top >= viewportCenter);
+        });
+
+        ticking = false;
+      };
+
+      const requestUpdate = () => {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(updateSections);
+      };
+
+      updateSections();
+      window.addEventListener("scroll", requestUpdate, { passive: true });
+      window.addEventListener("resize", requestUpdate);
+    })();
+  </script>
 </BaseLayout>
 
 <style is:global>
+  html {
+    scroll-snap-type: y mandatory;
+  }
+
   .glass {
     background: rgba(15, 23, 42, 0.5);
     border: 1px solid rgba(167, 139, 250, 0.2);
+  }
+
+  .home-section {
+    position: relative;
+    opacity: 0.38;
+    transform: scale(0.982) translate3d(0, 72px, 0);
+    filter: saturate(0.82) blur(0.2px);
+    transition:
+      opacity 820ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 820ms cubic-bezier(0.22, 1, 0.36, 1),
+      filter 820ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform, filter;
+  }
+
+  .home-section.is-active {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+    filter: saturate(1) blur(0);
+  }
+
+  .home-section.is-before {
+    opacity: 0.24;
+    transform: scale(0.97) translate3d(0, -56px, 0);
+    filter: saturate(0.72) blur(0.4px);
+  }
+
+  .home-section.is-after {
+    opacity: 0.24;
+    transform: scale(0.97) translate3d(0, 56px, 0);
+    filter: saturate(0.72) blur(0.4px);
+  }
+
+  .section-shell {
+    width: 100%;
+  }
+
+  .section-item {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0) scale(0.985);
+    transition:
+      opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+      filter 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--section-delay, 0s);
+    filter: blur(8px);
+  }
+
+  .home-section.is-active .section-item {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+
+  .reveal-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+  }
+
+  .reveal-mask > span {
+    display: inline-block;
+    transform: translate3d(0, 110%, 0);
+    transition: transform 820ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0s);
+  }
+
+  .home-section.is-active .reveal-mask > span {
+    transform: translate3d(0, 0, 0);
+  }
+
+  .home-section.is-before .section-item,
+  .home-section.is-after .section-item {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0) scale(0.98);
+    filter: blur(10px);
+  }
+
+  .home-section--hero::after,
+  .home-section--latest::after,
+  .home-section--stats::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(2, 6, 23, 0.04) 0%, rgba(2, 6, 23, 0.18) 100%);
   }
 
   .glow {
@@ -113,52 +461,86 @@ import Avatar from "../components/hero/Avatar";
     }
   }
 
-  /* Hero Section 动画 */
-  .glass-fade-in {
-    animation: fadeInScale 0.8s ease-out forwards;
-    opacity: 0;
+  .stat-chip {
+    background: rgba(15, 23, 42, 0.56);
+    border-color: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
   }
 
-  .hero-title {
-    animation: fadeInOnly 0.1s linear 0.1s forwards;
-    opacity: 0;
+  .post-card,
+  .site-note,
+  .note-row {
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(14px);
   }
 
-  .hero-desc {
-    animation: fadeInSlideUp 1s ease-out 0.9s forwards;
-    opacity: 0;
+  .post-card {
+    min-height: 220px;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 18px 40px -24px rgba(15, 23, 42, 0.8);
   }
 
-  .hero-buttons {
-    animation: fadeInSlideUp 1s ease-out 1.1s forwards;
-    opacity: 0;
+  .site-note {
+    border-color: rgba(167, 139, 250, 0.18);
   }
 
-  @keyframes fadeInOnly {
-    to {
+  @media (max-width: 1279px) {
+    html {
+      scroll-snap-type: y proximity;
+    }
+
+    .home-section,
+    .home-section.is-before,
+    .home-section.is-after {
       opacity: 1;
+      transform: none;
+      filter: none;
+    }
+
+    .home-section {
+      height: 100svh;
+      min-height: 100svh;
+      padding-block: 2rem;
+    }
+
+    .section-item,
+    .home-section.is-active .section-item,
+    .home-section.is-before .section-item,
+    .home-section.is-after .section-item {
+      opacity: 1;
+      transform: none;
+      filter: none;
+      transition: none;
+    }
+
+    .reveal-mask > span,
+    .home-section.is-active .reveal-mask > span {
+      transform: none;
+      transition: none;
     }
   }
 
-  @keyframes fadeInScale {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-snap-type: none;
     }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
 
-  @keyframes fadeInSlideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
+    .home-section,
+    .home-section.is-active,
+    .home-section.is-before,
+    .home-section.is-after,
+    .section-item,
+    .home-section.is-active .section-item,
+    .home-section.is-before .section-item,
+    .home-section.is-after .section-item,
+    .reveal-mask > span,
+    .home-section.is-active .reveal-mask > span {
       opacity: 1;
-      transform: translateY(0);
+      transform: none;
+      filter: none;
+      transition: none;
     }
   }
 </style>
