@@ -70,8 +70,7 @@ export async function calculateBlogStats(): Promise<BlogStats> {
         label: "本年",
         count: sortedPosts.filter((post) => {
           const postDate = new Date(post.data.date);
-          const daysDiff = (now.getTime() - postDate.getTime()) / (1000 * 60 * 60 * 24);
-          return daysDiff <= 365;
+          return postDate.getFullYear() === now.getFullYear();
         }).length,
       },
     ];

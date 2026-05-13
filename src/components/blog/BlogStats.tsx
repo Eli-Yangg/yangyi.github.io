@@ -56,6 +56,98 @@ function formatDaysAgo(days: number): string {
   return `${days} 天前更新`;
 }
 
+const MAX_VISIBLE_TOPICS = 5;
+
+interface TopicListProps {
+  categories: BlogStats["categories"];
+  maxCategoryCount: number;
+  isInView: boolean;
+}
+
+const TopicList: React.FC<TopicListProps> = ({ categories, maxCategoryCount, isInView }) => {
+  const shouldScroll = categories.length > MAX_VISIBLE_TOPICS;
+  const items = shouldScroll ? [...categories, ...categories] : categories;
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const pausedRef = useRef(false);
+
+  useEffect(() => {
+    if (!shouldScroll || !isInView) return;
+    const el = wrapperRef.current;
+    if (!el) return;
+
+    let raf: number;
+    const speed = 0.5;
+
+    const start = () => {
+      const halfHeight = el.scrollHeight / 2;
+      if (halfHeight <= 0) return;
+      const step = () => {
+        if (!pausedRef.current) {
+          el.scrollTop += speed;
+          if (el.scrollTop >= halfHeight) el.scrollTop = el.scrollTop - halfHeight;
+        }
+        raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+    };
+
+    // Delay one frame to ensure DOM is laid out
+    raf = requestAnimationFrame(start);
+    return () => cancelAnimationFrame(raf);
+  }, [shouldScroll, isInView, categories.length]);
+
+  useEffect(() => {
+    if (!shouldScroll) return;
+    const el = wrapperRef.current;
+    if (!el) return;
+    let timer: number;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      pausedRef.current = true;
+      el.scrollTop += e.deltaY;
+      const halfHeight = el.scrollHeight / 2;
+      if (el.scrollTop >= halfHeight) el.scrollTop -= halfHeight;
+      if (el.scrollTop < 0) el.scrollTop += halfHeight;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        pausedRef.current = false;
+      }, 2000);
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      window.clearTimeout(timer);
+    };
+  }, [shouldScroll]);
+
+  return (
+    <div ref={wrapperRef} className="topic-marquee-wrapper flex flex-1 flex-col">
+      <div>
+        {items.map((category, i) => (
+          <div key={`${category.name}-${i}`} className="pb-2.5">
+            <div className="mb-1.5 flex items-center justify-between gap-3 text-sm">
+              <span className="text-slate-100">{category.name}</span>
+              <span className="text-violet-200">{category.count}</span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-slate-800/80">
+              <motion.div
+                className="h-full rounded-full bg-linear-to-r from-violet-400 to-fuchsia-300 shadow-[0_0_10px_rgba(167,139,250,0.7)]"
+                initial={{ width: 0 }}
+                animate={
+                  isInView
+                    ? { width: `${(category.count / maxCategoryCount) * 100}%` }
+                    : { width: 0 }
+                }
+                transition={{ duration: 1.2, delay: 0.4, ease: EASE }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const BlogStatsComponent: React.FC<BlogStatsComponentProps> = ({ stats }) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(rootRef, {
@@ -72,12 +164,12 @@ const BlogStatsComponent: React.FC<BlogStatsComponentProps> = ({ stats }) => {
       animate={isInView ? "visible" : "hidden"}
       className="flex h-full w-full flex-col justify-center"
     >
-      <div className="space-y-4">
+      <div className="h-full space-y-4">
         <motion.div variants={titleVariants}>
           <p className="mb-2 text-sm tracking-[0.24em] text-violet-300 uppercase">Blog Pulse</p>
-          <h3 className="shine-text text-2xl font-bold md:text-3xl">把写作节奏做成首页的一部分</h3>
+          <h3 className="shine-text text-2xl font-bold md:text-3xl">落笔生花，积字成章</h3>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-            不只是显示总数，而是让访问者一眼看出最近有没有更新、内容覆盖了哪些主题，以及写作是否在持续发生。
+            不积跬步，无以至千里；不积小流，无以成江海。每一次落笔，皆是思想的远行。
           </p>
         </motion.div>
 
@@ -159,34 +251,11 @@ const BlogStatsComponent: React.FC<BlogStatsComponentProps> = ({ stats }) => {
               </span>
             </div>
 
-            <div className="flex flex-1 flex-col justify-center space-y-2.5">
-              {stats.categories.map((category) => (
-                <div key={category.name} className="group relative">
-                  <div className="mb-1.5 flex items-center justify-between gap-3 text-sm">
-                    <span className="text-slate-100">{category.name}</span>
-                    <span className="text-violet-200">{category.count}</span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-800/80">
-                    <motion.div
-                      className="h-full rounded-full bg-linear-to-r from-violet-400 to-fuchsia-300 shadow-[0_0_10px_rgba(167,139,250,0.7)]"
-                      initial={{ width: 0 }}
-                      animate={
-                        isInView
-                          ? {
-                              width: `${(category.count / maxCategoryCount) * 100}%`,
-                            }
-                          : { width: 0 }
-                      }
-                      transition={{
-                        duration: 1.2,
-                        delay: 0.4,
-                        ease: EASE,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <TopicList
+              categories={stats.categories}
+              maxCategoryCount={maxCategoryCount}
+              isInView={isInView}
+            />
           </motion.div>
         </div>
 
@@ -197,12 +266,10 @@ const BlogStatsComponent: React.FC<BlogStatsComponentProps> = ({ stats }) => {
                 Contribution Grid
               </p>
               <h4 className="mt-1 text-lg font-semibold text-white md:text-xl">
-                过去一年的发布热度
+                岁月留痕，笔耕不辍
               </h4>
             </div>
-            <p className="text-xs text-slate-400 md:text-sm">
-              按日期分布，独立展示最近一年的写作轨迹
-            </p>
+            <p className="text-xs text-slate-400 md:text-sm">纸上得来终觉浅，绝知此事要躬行</p>
           </div>
 
           <div className="mx-auto w-full">

@@ -134,16 +134,22 @@ body {
     0 10px 24px -8px rgba(0, 0, 0, 0.4);
 }
 
+/* 主题走马灯 */
+.topic-marquee-wrapper {
+  max-height: 200px;
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+.topic-marquee-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
 .contribution-stage {
   position: relative;
 }
 
 .contribution-stage .contrib-card {
   padding: 1rem;
-}
-
-.contribution-stage .contrib-cells {
-  max-height: 112px;
 }
 
 /* 数字渐变 + 光晕 */
